@@ -1,133 +1,30 @@
-from typing import TypedDict
 from httpx import Response
 
 from clients.http.client import HTTPClient
 from clients.http.gateway.client import build_gateway_http_client
-
-
-
-class OperationDict(TypedDict):
-    """
-    Описание структуры операции.
-    """
-    id: str
-    type: str
-    status: str
-    amount: float
-    cardId: str
-    category: str
-    createdAt: str
-    accountId: str
-
-
-class OperationReceiptDict(TypedDict):
-    """
-    Описание структуры чека по операции.
-    """
-    url: str
-    document: str
-
-
-class OperationsSummaryDict(TypedDict):
-    """
-    Описание структуры статистики операций.
-    """
-    spentAmount: float
-    receivedAmount: float
-    cashbackAmount: float
-
-
-class GetOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class GetOperationReceiptResponseDict(TypedDict):
-    receipt: OperationReceiptDict
-
-
-class GetOperationsResponseDict(TypedDict):
-    operations: list[OperationDict]
-
-
-class GetOperationsSummaryResponseDict(TypedDict):
-    summary: OperationsSummaryDict
-
-
-class MakeFeeOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakeTopUpOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakeCashbackOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakeTransferOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakePurchaseOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakeBillPaymentOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-class MakeCashWithdrawalOperationResponseDict(TypedDict):
-    operation: OperationDict
-
-
-
-class AccountQueryDict(TypedDict):
-    accountId: str
-
-
-class OperationBaseRequestDict(TypedDict):
-    status: str
-    amount: float
-    cardId: str
-    accountId: str
-
-
-class GetOperationsQueryDict(AccountQueryDict):
-    ...
-
-
-class GetOperationsSummaryQueryDict(AccountQueryDict):
-    ...
-
-
-class MakeFeeOperationRequestDict(OperationBaseRequestDict):
-    ...
-
-
-class MakeTopUpOperationRequestDict(OperationBaseRequestDict):
-    ...
-
-
-class MakeCashbackOperationRequestDict(OperationBaseRequestDict):
-    ...
-
-
-class MakeTransferOperationRequestDict(OperationBaseRequestDict):
-    ...
-
-
-class MakePurchaseOperationRequestDict(OperationBaseRequestDict):
-    category: str
-
-
-class MakeBillPaymentOperationRequestDict(OperationBaseRequestDict):
-    ...
-
-
-class MakeCashWithdrawalOperationRequestDict(OperationBaseRequestDict):
-    ...
-
+from clients.http.gateway.operations.schema import (
+    GetOperationsQuerySchema,
+    GetOperationsSummaryQuerySchema,
+    MakeFeeOperationRequestSchema,
+    MakeTopUpOperationRequestSchema,
+    MakeCashbackOperationRequestSchema,
+    MakeTransferOperationRequestSchema,
+    MakePurchaseOperationRequestSchema,
+    MakeBillPaymentOperationRequestSchema,
+    MakeCashWithdrawalOperationRequestSchema,
+    GetOperationResponseSchema,
+    GetOperationReceiptResponseSchema,
+    GetOperationsResponseSchema,
+    GetOperationsSummaryResponseSchema,
+    MakeFeeOperationResponseSchema,
+    MakeTopUpOperationResponseSchema,
+    MakeCashbackOperationResponseSchema,
+    MakeTransferOperationResponseSchema,
+    MakePurchaseOperationResponseSchema,
+    MakeBillPaymentOperationResponseSchema,
+    MakeCashWithdrawalOperationResponseSchema,
+)
+from clients.http.gateway.operations.schema import OperationStatus
 
 
 class OperationsGatewayHTTPClient(HTTPClient):
@@ -142,123 +39,122 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def get_operation_receipt_api(self, operation_id: str) -> Response:
         return self.get(f"/api/v1/operations/operation-receipt/{operation_id}")
 
-    def get_operations_api(self, query: GetOperationsQueryDict) -> Response:
-        return self.get("/api/v1/operations", params=query)
+    def get_operations_api(self, query: GetOperationsQuerySchema) -> Response:
+        return self.get("/api/v1/operations", params=query.model_dump(by_alias=True))
 
-    def get_operations_summary_api(self, query: GetOperationsSummaryQueryDict) -> Response:
-        return self.get("/api/v1/operations/operations-summary", params=query)
+    def get_operations_summary_api(self, query: GetOperationsSummaryQuerySchema) -> Response:
+        return self.get("/api/v1/operations/operations-summary", params=query.model_dump(by_alias=True))
 
-    def make_fee_operation_api(self, request: MakeFeeOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-fee-operation", json=request)
+    def make_fee_operation_api(self, request: MakeFeeOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-fee-operation", json=request.model_dump(by_alias=True))
 
-    def make_top_up_operation_api(self, request: MakeTopUpOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-top-up-operation", json=request)
+    def make_top_up_operation_api(self, request: MakeTopUpOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-top-up-operation", json=request.model_dump(by_alias=True))
 
-    def make_cashback_operation_api(self, request: MakeCashbackOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-cashback-operation", json=request)
+    def make_cashback_operation_api(self, request: MakeCashbackOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-cashback-operation", json=request.model_dump(by_alias=True))
 
-    def make_transfer_operation_api(self, request: MakeTransferOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-transfer-operation", json=request)
+    def make_transfer_operation_api(self, request: MakeTransferOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-transfer-operation", json=request.model_dump(by_alias=True))
 
-    def make_purchase_operation_api(self, request: MakePurchaseOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-purchase-operation", json=request)
+    def make_purchase_operation_api(self, request: MakePurchaseOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-purchase-operation", json=request.model_dump(by_alias=True))
 
-    def make_bill_payment_operation_api(self, request: MakeBillPaymentOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-bill-payment-operation", json=request)
+    def make_bill_payment_operation_api(self, request: MakeBillPaymentOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-bill-payment-operation", json=request.model_dump(by_alias=True))
 
-    def make_cash_withdrawal_operation_api(self, request: MakeCashWithdrawalOperationRequestDict) -> Response:
-        return self.post("/api/v1/operations/make-cash-withdrawal-operation", json=request)
+    def make_cash_withdrawal_operation_api(self, request: MakeCashWithdrawalOperationRequestSchema) -> Response:
+        return self.post("/api/v1/operations/make-cash-withdrawal-operation", json=request.model_dump(by_alias=True))
 
 
-    def get_operation(self, operation_id: str) -> GetOperationResponseDict:
+    def get_operation(self, operation_id: str) -> GetOperationResponseSchema:
         response = self.get_operation_api(operation_id)
-        return response.json()
+        return GetOperationResponseSchema.model_validate_json(response.text)
 
-    def get_operation_receipt(self, operation_id: str) -> GetOperationReceiptResponseDict:
+    def get_operation_receipt(self, operation_id: str) -> GetOperationReceiptResponseSchema:
         response = self.get_operation_receipt_api(operation_id)
-        return response.json()
+        return GetOperationReceiptResponseSchema.model_validate_json(response.text)
 
-    def get_operations(self, account_id: str) -> GetOperationsResponseDict:
-        query = GetOperationsQueryDict(accountId=account_id)
+    def get_operations(self, account_id: str) -> GetOperationsResponseSchema:
+        query = GetOperationsQuerySchema(account_id=account_id)
         response = self.get_operations_api(query)
-        return response.json()
+        return GetOperationsResponseSchema.model_validate_json(response.text)
 
-    def get_operations_summary(self, account_id: str) -> GetOperationsSummaryResponseDict:
-        query = GetOperationsSummaryQueryDict(accountId=account_id)
+    def get_operations_summary(self, account_id: str) -> GetOperationsSummaryResponseSchema:
+        query = GetOperationsSummaryQuerySchema(account_id=account_id)
         response = self.get_operations_summary_api(query)
-        return response.json()
+        return GetOperationsSummaryResponseSchema.model_validate_json(response.text)
 
-    def make_fee_operation(self, card_id: str, account_id: str) -> MakeFeeOperationResponseDict:
-        request = MakeFeeOperationRequestDict(
-            status="COMPLETED",
+    def make_fee_operation(self, card_id: str, account_id: str) -> MakeFeeOperationResponseSchema:
+        request = MakeFeeOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=55.77,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_fee_operation_api(request)
-        return response.json()
+        return MakeFeeOperationResponseSchema.model_validate_json(response.text)
 
-    def make_top_up_operation(self, card_id: str, account_id: str) -> MakeTopUpOperationResponseDict:
-        request = MakeTopUpOperationRequestDict(
-            status="COMPLETED",
+    def make_top_up_operation(self, card_id: str, account_id: str) -> MakeTopUpOperationResponseSchema:
+        request = MakeTopUpOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=1500.11,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_top_up_operation_api(request)
-        return response.json()
+        return MakeTopUpOperationResponseSchema.model_validate_json(response.text)
 
-    def make_cashback_operation(self, card_id: str, account_id: str) -> MakeCashbackOperationResponseDict:
-        request = MakeCashbackOperationRequestDict(
-            status="COMPLETED",
+    def make_cashback_operation(self, card_id: str, account_id: str) -> MakeCashbackOperationResponseSchema:
+        request = MakeCashbackOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=99.99,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_cashback_operation_api(request)
-        return response.json()
+        return MakeCashbackOperationResponseSchema.model_validate_json(response.text)
 
-    def make_transfer_operation(self, card_id: str, account_id: str) -> MakeTransferOperationResponseDict:
-        request = MakeTransferOperationRequestDict(
-            status="COMPLETED",
+    def make_transfer_operation(self, card_id: str, account_id: str) -> MakeTransferOperationResponseSchema:
+        request = MakeTransferOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=200.00,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_transfer_operation_api(request)
-        return response.json()
+        return MakeTransferOperationResponseSchema.model_validate_json(response.text)
 
-    def make_purchase_operation(self, card_id: str, account_id: str) -> MakePurchaseOperationResponseDict:
-        request = MakePurchaseOperationRequestDict(
-            status="COMPLETED",
+    def make_purchase_operation(self, card_id: str, account_id: str) -> MakePurchaseOperationResponseSchema:
+        request = MakePurchaseOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=321.45,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
             category="electronics",
         )
         response = self.make_purchase_operation_api(request)
-        return response.json()
+        return MakePurchaseOperationResponseSchema.model_validate_json(response.text)
 
-    def make_bill_payment_operation(self, card_id: str, account_id: str) -> MakeBillPaymentOperationResponseDict:
-        request = MakeBillPaymentOperationRequestDict(
-            status="COMPLETED",
+    def make_bill_payment_operation(self, card_id: str, account_id: str) -> MakeBillPaymentOperationResponseSchema:
+        request = MakeBillPaymentOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=870.50,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_bill_payment_operation_api(request)
-        return response.json()
+        return MakeBillPaymentOperationResponseSchema.model_validate_json(response.text)
 
-    def make_cash_withdrawal_operation(self, card_id: str, account_id: str) -> MakeCashWithdrawalOperationResponseDict:
-        request = MakeCashWithdrawalOperationRequestDict(
-            status="COMPLETED",
+    def make_cash_withdrawal_operation(self, card_id: str, account_id: str) -> MakeCashWithdrawalOperationResponseSchema:
+        request = MakeCashWithdrawalOperationRequestSchema(
+            status=OperationStatus.COMPLETED,
             amount=500.00,
-            cardId=card_id,
-            accountId=account_id,
+            card_id=card_id,
+            account_id=account_id,
         )
         response = self.make_cash_withdrawal_operation_api(request)
-        return response.json()
-
+        return MakeCashWithdrawalOperationResponseSchema.model_validate_json(response.text)
 
 
 def build_operations_gateway_http_client() -> OperationsGatewayHTTPClient:
