@@ -1,7 +1,7 @@
 from typing import TypedDict
 from httpx import Response
 
-from clients.http.gateway.client import HTTPClient
+from clients.http.client import HTTPClient
 
 
 class IssueVirtualCardRequestDict(TypedDict):
