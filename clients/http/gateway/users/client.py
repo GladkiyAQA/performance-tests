@@ -44,13 +44,7 @@ class UsersGatewayHTTPClient(HTTPClient):
 
     # Теперь используем pydantic-модель для аннотации
     def create_user(self) -> CreateUserResponseSchema:
-        request = CreateUserRequestSchema(
-            email=f"user.{time.time()}@example.com",
-            last_name="string",
-            first_name="string",
-            middle_name="string",
-            phone_number="string"
-        )
+        request = CreateUserRequestSchema()
         response = self.create_user_api(request)
         return CreateUserResponseSchema.model_validate_json(response.text)
 

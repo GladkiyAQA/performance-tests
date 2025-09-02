@@ -2,6 +2,8 @@ from enum import StrEnum
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
+from tools.fakers import fake  # <- генератор случайных данных
+
 
 class OperationType(StrEnum):
     FEE = "FEE"
@@ -114,8 +116,8 @@ class GetOperationsSummaryQuerySchema(BaseModel):
 class OperationBaseRequestSchema(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    status: OperationStatus
-    amount: float
+    status: OperationStatus = Field(default_factory=lambda: fake.enum(OperationStatus))
+    amount: float = Field(default_factory=lambda: fake.amount())
     card_id: str = Field(alias="cardId")
     account_id: str = Field(alias="accountId")
 
@@ -137,7 +139,7 @@ class MakeTransferOperationRequestSchema(OperationBaseRequestSchema):
 
 
 class MakePurchaseOperationRequestSchema(OperationBaseRequestSchema):
-    category: str
+    category: str = Field(default_factory=lambda: fake.category())
 
 
 class MakeBillPaymentOperationRequestSchema(OperationBaseRequestSchema):
