@@ -1,6 +1,6 @@
 from httpx import Response
 
-from clients.http.client import HTTPClient
+from clients.http.client import HTTPClient, HTTPClientExtensions
 from clients.http.gateway.client import build_gateway_http_client
 from clients.http.gateway.documents.schema import (
     GetTariffDocumentResponseSchema,
@@ -17,13 +17,19 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         """
         Низкоуровневый метод: получить тариф по счету.
         """
-        return self.get(f"/api/v1/documents/tariff-document/{account_id}")
+        return self.get(
+            f"/api/v1/documents/tariff-document/{account_id}",
+            extensions=HTTPClientExtensions(route="/api/v1/documents/tariff-document/{account_id}")
+        )
 
     def get_contract_document_api(self, account_id: str) -> Response:
         """
         Низкоуровневый метод: получить контракт по счету.
         """
-        return self.get(f"/api/v1/documents/contract-document/{account_id}")
+        return self.get(
+            f"/api/v1/documents/contract-document/{account_id}",
+            extensions=HTTPClientExtensions(route="/api/v1/documents/tariff-document/{account_id}")
+        )
 
     def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseSchema:
         """
