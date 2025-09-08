@@ -30,8 +30,6 @@ class OpenDebitCardAccountScenarioUser(User):
         Открытие счета дебетовой карты.
         Здесь мы выполняем POST-запрос к /api/v1/accounts/open-debit-card-account.
         """
-        request = OpenDebitCardAccountRequestSchema(
-            userId=self.create_user_response.user.id
+        self.accounts_gateway_client.open_debit_card_account(
+            self.create_user_response.user.id
         )
-
-        self.accounts_gateway_client.open_debit_card_account_api(request)
