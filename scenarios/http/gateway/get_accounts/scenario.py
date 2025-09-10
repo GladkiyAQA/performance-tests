@@ -1,8 +1,9 @@
-from locust import User, TaskSet, task, between
+from locust import TaskSet, task
 
 from clients.http.gateway.users.schema import CreateUserResponseSchema
 from clients.http.gateway.accounts.schema import OpenDepositAccountResponseSchema
 from clients.http.gateway.gateway_task_set import GatewayHTTPTaskSet
+from tools.locust.base_user import LocustBaseUser
 
 
 class GetAccountsTaskSet(GatewayHTTPTaskSet, TaskSet):
@@ -41,7 +42,8 @@ class GetAccountsTaskSet(GatewayHTTPTaskSet, TaskSet):
         )
 
 
-class GetAccountsScenarioUser(User):
-    host = "localhost"
-    wait_time = between(1, 3)
+class GetDocumentsScenarioUser(LocustBaseUser):
+    """
+    Пользователь Locust, исполняющий последовательный сценарий получения документов.
+    """
     tasks = [GetAccountsTaskSet]
