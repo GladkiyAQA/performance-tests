@@ -9,6 +9,7 @@ from clients.http.gateway.cards.schema import (
     IssuePhysicalCardResponseSchema
 )
 from clients.http.gateway.client import build_gateway_http_client, build_gateway_locust_http_client
+from tools.routes import APIRoutes
 
 
 class CardsGatewayHTTPClient(HTTPClient):
@@ -24,7 +25,7 @@ class CardsGatewayHTTPClient(HTTPClient):
         :return: Ответ от сервера (объект httpx.Response).
         """
         return self.post(
-            "/api/v1/cards/issue-virtual-card",
+            f"{APIRoutes.CARDS}/issue-virtual-card",
             json=request.model_dump(by_alias=True)
         )
 
@@ -36,7 +37,7 @@ class CardsGatewayHTTPClient(HTTPClient):
         :return: Ответ от сервера (объект httpx.Response).
         """
         return self.post(
-            "/api/v1/cards/issue-physical-card",
+            f"{APIRoutes.CARDS}/issue-physical-card",
             json=request.model_dump(by_alias=True)
         )
 
