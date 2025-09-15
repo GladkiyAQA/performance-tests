@@ -1,0 +1,89 @@
+name: Performance Tests  # Название workflow — отображается в UI GitHub Actions
+
+on:
+  workflow_dispatch: # Позволяет запускать workflow вручную через UI GitHub
+    inputs:
+      SCENARIO:
+        type: 'choice'  # Пользователь должен выбрать один из заранее заданных конфигов
+        default: './scenarios/grpc/gateway/new_user_get_accounts/v1.0.conf'
+        options:
+          # grpc-сценарии
+          - ./scenarios/grpc/gateway/existing_user_get_documents/v1.0.conf
+          - ./scenarios/grpc/gateway/existing_user_get_operations/v1.0.conf
+          - ./scenarios/grpc/gateway/existing_user_issue_virtual_card/v1.0.conf
+          - ./scenarios/grpc/gateway/existing_user_make_purchase_operation/v1.0.conf
+          - ./scenarios/grpc/gateway/new_user_get_accounts/v1.0.conf
+          - ./scenarios/grpc/gateway/new_user_get_documents/v1.0.conf
+          - ./scenarios/grpc/gateway/new_user_issue_physical_card/v1.0.conf
+          - ./scenarios/grpc/gateway/new_user_make_top_up_operation/v1.0.conf
+          # http-сценарии
+          - ./scenarios/http/gateway/existing_user_get_documents/v1.0.conf
+          - ./scenarios/http/gateway/existing_user_get_operations/v1.0.conf
+          - ./scenarios/http/gateway/existing_user_issue_virtual_card/v1.0.conf
+          - ./scenarios/http/gateway/existing_user_make_purchase_operation/v1.0.conf
+          - ./scenarios/http/gateway/new_user_get_accounts/v1.0.conf
+          - ./scenarios/http/gateway/new_user_get_documents/v1.0.conf
+          - ./scenarios/http/gateway/new_user_issue_physical_card/v1.0.conf
+          - ./scenarios/http/gateway/new_user_make_top_up_operation/v1.0.conf
+        required: true
+        description: 'Locust config file'  # Комментарий, отображаемый в UI при запуске
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest  # Используется стандартный GitHub Actions runner
+    timeout-minutes: 30  # Ограничение по времени выполнения — 30 минут
+
+    steps:
+      # 1. Клонируем репозиторий, в котором находится YAML-файл
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # 2. Устанавливаем Python (используется в Locust)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'  # Версия Python, соответствующая проекту
+
+      # 3. Клонируем репозиторий с урезанным docker-compose стендом и Dockerfile-ами
+      - name: Clone test services
+        run: git clone https://github.com/Nikita-Filonov/performance-qa-engineer-course.git
+
+      # 4. Сборка базового образа, на котором основаны gateway и mock-сервисы
+      - name: Build base Docker image
+        run: docker build -f Dockerfile.base -t base-service .
+        working-directory: performance-qa-engineer-course
+
+      # 5. Запускаем только необходимые сервисы для тестов: grpc-gateway, http-gateway, grpc-mock, http-mock
+      - name: Start test services
+        run: docker compose -f docker-compose.ci.yaml up -d --build
+        working-directory: performance-qa-engineer-course
+
+      # 6. Устанавливаем зависимости, включая Locust и все библиотеки, нужные для запуска сценария
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 7. Создаём папку, куда будет сохранён HTML-отчёт по результатам теста
+      - name: Create report directory
+        run: mkdir -p ./reports/${{ github.run_id }}
+
+      # 8. Запускаем Locust с выбранным конфигурационным файлом и сохраняем HTML-отчёт
+      - name: Run load tests and generate HTML report
+        run: locust --config=${{ github.event.inputs.SCENARIO }} --html=./reports/${{ github.run_id }}/index.html
+
+      # 9. Деплой HTML-отчёта в GitHub Pages, чтобы можно было посмотреть результаты в браузере
+      - name: Deploy HTML report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Авторизация для push в gh-pages
+          keep_files: true  # Сохраняем предыдущие отчёты
+          publish_dir: reports  # Публикуем директорию reports
+          publish_branch: gh-pages  # На ветке gh-pages
+
+      # 10. Корректно останавливаем docker-контейнеры и удаляем volume-ы (например, temp-файлы)
+      - name: Stop test services
+        if: always()
+        run: docker compose -f docker-compose.ci.yaml down -v
+        working-directory: performance-qa-engineer-course
